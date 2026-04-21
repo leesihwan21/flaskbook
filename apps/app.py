@@ -8,39 +8,54 @@ from apps.config import config
 
 db = SQLAlchemy()
 csrf = CSRFProtect()
-# LoginManagerをインスタンス化する
+
+# LoginManager 인스턴스화
 login_manager = LoginManager()
-# login_view属性に未ログイン時にリダイレクトするエンドポイントを指定する
+
+# login_view 속성에 미로그인 시 리다이렉트할 엔드포인트 지정
 login_manager.login_view = "auth.signup"
-# login_message属性にログイン後に表示するメッセージを指定する
-# ここでは何も表示しないよう空を指定する
+
+# login_message 속성에 로그인 후 표시할 메시지 지정
+# 여기서는 아무것도 표시하지 않도록 공백 지정
 login_manager.login_message = ""
 
 
-# create_app関数を作成する
+# create_app 함수 작성
 def create_app(config_key):
-    # Flaskインスタンス生成
+    # Flask 인스턴스 생성
     app = Flask(__name__)
     app.config.from_object(config[config_key])
 
-    # SQLAlchemyとアプリを連携する
+    # SQLAlchemy와 앱을 연동
     db.init_app(app)
-    # Migrateとアプリを連携する
+    # Migrate와 앱을 연동
     Migrate(app, db)
     csrf.init_app(app)
-    # login_managerをアプリケーションと連携する
+
+    # login_manager를 애플리케이션과 연동
     login_manager.init_app(app)
 
-    # crudパッケージからviewsをimportする
+    # crud 패키지에서 views를 import
     from apps.crud import views as crud_views
-
-    # register_blueprintを使いviewsのcrudをアプリへ登録する
+    # register_blueprint를 사용하여 views의 crud를 앱에 등록
     app.register_blueprint(crud_views.crud, url_prefix="/crud")
 
-    # これから作成するauthパッケージからviewsをimportする
+    # auth 패키지에서 views를 import
     from apps.auth import views as auth_views
-
-    # register_blueprintを使いviewsのauthをアプリへ登録する
+    # register_blueprint를 사용하여 views의 auth를 앱에 등록
     app.register_blueprint(auth_views.auth, url_prefix="/auth")
+
+    # detector 패키지에서 views를 import
+    from apps.detector import views as dt_views
+    # register_blueprint를 사용하여 views의 detector를 앱에 등록
+    app.register_blueprint(dt_views.dt, url_prefix="/")
+
+    # 모델 import (마이그레이션 인식용)
+    from apps.detector import models  # noqa
+
+    # 커스텀 오류 화면 등록
+    from apps.detector import views as error_views
+    app.register_error_handler(404, error_views.page_not_found)
+    app.register_error_handler(500, error_views.internal_server_error)
 
     return app

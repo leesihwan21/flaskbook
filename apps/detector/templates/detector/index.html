@@ -1,0 +1,64 @@
+{% extends "detector/base.html" %}
+{% block content %}
+<div class="container">
+    {# 1. 이미지 신규 등록 버튼 (기존 레이아웃 유지) #}
+    <div class="row dt-image-register-btn justify-content-end">
+        <a class="btn btn-primary" href="{{ url_for('detector.upload_image') }}">이미지 신규 등록</a>
+    </div>
+
+    {# 2. 검색 폼 (기존 기능 유지) #}
+    <div class="row">
+        <form method="GET" action="{{ url_for('detector.search') }}" class="form-inline mb-3">
+            {{ search_form.search_text(class="form-control dt-search", placeholder="태그로 검색") }}
+            {{ search_form.submit(class="btn btn-secondary ml-2") }}
+        </form>
+    </div>
+
+    {# 3. 이미지 카드 목록 (데이터 처리 방식 수정) #}
+    <div class="row">
+        {# 백엔드의 query(User, UserImage) 결과인 튜플을 분리하여 받습니다 #}
+        {% for user_image in user_images %}
+        <div class="col-md-4">
+            <div class="card dt-image-content">
+                <header class="card-header d-flex justify-content-between">
+                    {# user_image.user_id 대신 실제 이름인 user.username 표시 가능 #}
+                    <span class="dt-image-username">{{ current_user.username }}</span>
+                    <div>
+                        {# 감지 버튼 (유지) #}
+                        {% if not user_image.is_detected %}
+                        <form method="POST" action="{{ url_for('detector.detect', image_id=user_image.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-primary btn-sm">감지</button>
+                        </form>
+                        {% endif %}
+                        
+                        {# 삭제 버튼 (유지) #}
+                        <form method="POST" action="{{ url_for('detector.delete_image', image_id=user_image.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-danger btn-sm">삭제</button>
+                        </form>
+                    </div>
+                </header>
+                
+                <section class="card-body">
+                    {# 이미지 표시: img-fluid 클래스로 반응형 크기 조절 #}
+                    <img src="{{ url_for('detector.get_image', filename=user_image.image_path) }}" class="img-fluid">
+                </section>
+                
+                <footer class="card-footer">
+                    {# 태그 반복 표시 (유지) #}
+                    {% for tag in user_image.user_image_tags %}
+                    <span>#{{ tag.tag_name }}</span>
+                    {% endfor %}
+                </footer>
+            </div>
+        </div>
+        {% else %}
+        {# 데이터가 없는 경우의 예외 처리 #}
+        <div class="col-12 text-center mt-5">
+            <p>등록된 이미지가 없습니다.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

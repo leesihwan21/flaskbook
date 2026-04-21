@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ko">
 
 <head>
     <meta charset="UTF-8" />
-    <!-- titleを継承先で実装する -->
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('crud.static', filename='style.css' ) }}" />
 </head>
@@ -12,13 +11,14 @@
     <div>
         {% if current_user.is_authenticated %}
         <p>
-            <span>{{ current_user.username }}</span> -
-            <span><a href="{{ url_for('auth.logout') }}">ログアウト
-                </a></span>
+            <span>{{ current_user.username }}</span>님 -
+            <span>
+                <a href="{{ url_for('auth.logout') }}">로그아웃</a>
+            </span>
         </p>
         {% endif %}
     </div>
-    <!-- contentを継承先で実装する -->
+    <hr />
     {% block content %}{% endblock %}
 </body>
 

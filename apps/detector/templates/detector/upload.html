@@ -1,0 +1,21 @@
+{% extends "detector/base.html" %}
+{% block title %}이미지 업로드{% endblock %}
+{% block content %}
+<div class="mx-auto dt-auth-main">
+  <div class="card dt-auth-signup">
+    <header class="card-header">이미지 업로드</header>
+    <section class="card-body">
+      <form method="post" action="{{ url_for('detector.upload_image') }}" enctype="multipart/form-data">
+        {{ form.csrf_token }}
+        {% for error in form.image.errors %}
+          <span class="text-danger">{{ error }}</span>
+        {% endfor %}
+        <div class="mb-3">
+          {{ form.image(class="form-control") }}
+        </div>
+        {{ form.submit(class="btn btn-primary w-100") }}
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}

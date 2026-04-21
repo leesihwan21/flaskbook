@@ -4,11 +4,11 @@ from apps.crud.models import User
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_user, logout_user
 
-# Blueprintを使ってauthを生成する
+# Blueprint를 사용하여 auth 생성
 auth = Blueprint("auth", __name__, template_folder="templates", static_folder="static")
 
 
-# indexエンドポイントを作成する
+# index 엔드포인트 작성
 @auth.route("/")
 def index():
     return render_template("auth/index.html")
@@ -16,7 +16,7 @@ def index():
 
 @auth.route("/signup", methods=["GET", "POST"])
 def signup():
-    # SignUpFormをインスタンス化する
+    # SignUpForm 인스턴스화
     form = SignUpForm()
 
     if form.validate_on_submit():
@@ -26,19 +26,19 @@ def signup():
             password=form.password.data,
         )
 
-        # メールアドレス重複チェックをする
+        # 이메일 중복 체크
         if user.is_duplicate_email():
-            flash("指定のメールアドレスは登録済みです")
+            flash("이미 등록된 메일 주소입니다.")
             return redirect(url_for("auth.signup"))
 
-        # ユーザー情報を登録する
+        # 사용자 정보 등록
         db.session.add(user)
         db.session.commit()
 
-        # ユーザー情報をセッションに格納する
+        # 사용자 정보를 세션에 저장 (로그인 처리)
         login_user(user)
 
-        # GETパラメータにnextキーが存在し、値がない場合はユーザーの一覧ページへリダイレクトする
+        # GET 파라미터에 next 키가 존재하고 값이 있는 경우 해당 페이지로, 아니면 사용자 목록 페이지로 리다이렉트
         next_ = request.args.get("next")
         if next_ is None or not next_.startswith("/"):
             next_ = url_for("crud.users")
@@ -52,16 +52,17 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        # メールアドレスからユーザーを取得する
+        # 메일 주소로 사용자 조회
         user = User.query.filter_by(email=form.email.data).first()
 
-        # ユーザーが存在しパスワードが一致する場合はログインを許可する
+        # 사용자가 존재하고 비밀번호가 일치하는 경우 로그인 허용
         if user is not None and user.verify_password(form.password.data):
             login_user(user)
-            return redirect(url_for("crud.users"))
+            return redirect(url_for("detector.index"))
 
-        # ログイン失敗メッセージを設定する
-        flash("メールアドレスかパスワードか不正です")
+        # 로그인 실패 메시지 설정
+        flash("메일 주소 또는 비밀번호가 올바르지 않습니다.")
+        
     return render_template("auth/login.html", form=form)
 
 

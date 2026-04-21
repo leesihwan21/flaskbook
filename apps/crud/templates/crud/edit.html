@@ -1,34 +1,40 @@
 {% extends 'crud/base.html' %}
-{% block title %}ユーザー編集{% endblock %}
+{% block title %}사용자 수정{% endblock %}
 {% block content %}
-<h2>ユーザー編集</h2>
+<h2>사용자 수정</h2>
 <form action="{{ url_for('crud.edit_user', user_id=user.id) }}" method="POST" novalidate="novalidate">
     {{ form.csrf_token }}
     <p>
-        {{ form.username.label }} {{ form.username(placeholder="ユーザー名",
-        value=user.username) }}
+        {{ form.username.label }} 
+        {{ form.username(placeholder="사용자 이름", value=user.username) }}
     </p>
     {% for error in form.username.errors %}
     <span style="color: red;">{{ error }}</span>
     {% endfor %}
+
     <p>
-        {{ form.email.label }} {{ form.email(placeholder="メールアドレス",
-        value=user.email) }}
+        {{ form.email.label }} 
+        {{ form.email(placeholder="메일 주소", value=user.email) }}
     </p>
     {% for error in form.email.errors %}
     <span style="color: red;">{{ error }}</span>
     {% endfor %}
+
     <p>
-        {{ form.password.label }} {{ form.password(placeholder="パスワード") }}
+        {{ form.password.label }} 
+        {{ form.password(placeholder="비밀번호") }}
     </p>
     {% for error in form.password.errors %}
     <span style="color: red;">{{ error }}</span>
     {% endfor %}
-    <p><input type="submit" value="更新" /></p>
+
+    <p><input type="submit" value="수정하기" /></p>
 </form>
+
+<hr />
 
 <form action="{{ url_for('crud.delete_user', user_id=user.id) }}" method="POST">
     {{ form.csrf_token }}
-    <input type="submit" value="削除">
+    <input type="submit" value="삭제하기" onclick="return confirm('정말로 삭제하시겠습니까?');">
 </form>
 {% endblock %}

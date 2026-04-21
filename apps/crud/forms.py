@@ -3,28 +3,31 @@ from wtforms import PasswordField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email, length
 
 
-# ユーザー新規作成とユーザー編集フォームクラス
+# 사용자 신규 작성 및 사용자 편집 폼 클래스
 class UserForm(FlaskForm):
-    # ユーザーフォームのusername属性のラベルとバリデータを設定する
+    # 사용자 폼의 username 속성 라벨과 검증 설정
     username = StringField(
-        "ユーザー名",
+        "사용자 이름",
         validators=[
-            DataRequired(message="ユーザー名は必須です。"),
-            length(max=30, message="30文字以内で入力してください。"),
+            DataRequired(message="사용자 이름은 필수입니다."),
+            length(max=30, message="30자 이내로 입력해 주세요."),
         ],
     )
 
-    # ユーザーフォームemail属性のラベルとバリデータを設定する
+    # 사용자 폼의 email 속성 라벨과 검증 설정
     email = StringField(
-        "メールアドレス",
+        "메일 주소",
         validators=[
-            DataRequired(message="メールアドレスは必須です。"),
-            Email(message="メールアドレスの形式で入力してください。"),
+            DataRequired(message="메일 주소는 필수입니다."),
+            Email(message="메일 주소 형식으로 입력해 주세요."),
         ],
     )
 
-    # ユーザーフォームpassword属性のラベルとバリデータを設定する
-    password = PasswordField("パスワード", validators=[DataRequired(message="パスワードは必須です。")])
+    # 사용자 폼의 password 속성 라벨과 검증 설정
+    password = PasswordField(
+        "비밀번호", 
+        validators=[DataRequired(message="비밀번호는 필수입니다.")]
+    )
 
-    # ユーザーフォームsubmitの文言を設定する
-    submit = SubmitField("新規登録")
+    # 사용자 폼의 submit 버튼 문구 설정
+    submit = SubmitField("신규 등록")

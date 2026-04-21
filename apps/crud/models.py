@@ -5,11 +5,12 @@ from flask_login import UserMixin
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
-# db.Modelを継承したUserクラスを作成する
+# db.Model을 상속받은 User 클래스 작성
 class User(db.Model, UserMixin):
-    # テーブル名を指定する
+    # 테이블 이름 지정
     __tablename__ = "users"
-    # カラムを定義する
+    
+    # 컬럼 정의
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, index=True)
     email = db.Column(db.String, unique=True, index=True)
@@ -17,26 +18,26 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
-    # パスワードをセットするためのプロパティ
+    # 패스워드 설정을 위한 프로퍼티
     @property
     def password(self):
-        raise AttributeError("読み取り不可")
+        raise AttributeError("비밀번호는 직접 읽을 수 없습니다.")
 
-    # パスワードをセットするためのセッター関数でハッシュ化したパスワードをセットする
+    # 패스워드 세터 함수: 비밀번호를 해시화하여 저장
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password)
 
-    # パスワードチェックをする
+    # 패스워드 일치 여부 확인
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    # メールアドレス重複チェックをする
+    # 메일 주소 중복 체크
     def is_duplicate_email(self):
         return User.query.filter_by(email=self.email).first() is not None
 
 
-# ログインしているユーザー情報を取得する関数を作成する
+# 로그인한 사용자 정보를 가져오는 로더 함수
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)

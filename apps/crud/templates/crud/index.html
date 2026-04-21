@@ -1,22 +1,28 @@
 {% extends "crud/base.html" %}
-{% block title %}ユーザーの一覧{% endblock %}
+{% block title %}사용자 목록{% endblock %}
 {% block content %}
-<h2>ユーザーの一覧</h2>
-<a href="{{ url_for('crud.create_user') }}">ユーザー新規作成</a>
-<table>
-    <tr>
-        <th>ユーザーID</th>
-        <th>ユーザー名</th>
-        <th>メールアドレス</th>
-    </tr>
-    {% for user in users %}
-    <tr>
-        <td>
-            <a href="{{ url_for('crud.edit_user', user_id=user.id) }}">{{ user.id }}</a>
-        </td>
-        <td>{{ user.username }}</td>
-        <td>{{ user.email }}</td>
-    </tr>
-    {% endfor %}
+<h2>사용자 목록</h2>
+<p>
+    <a href="{{ url_for('crud.create_user') }}">사용자 신규 생성</a>
+</p>
+<table border="1">
+    <thead>
+        <tr>
+            <th>사용자 ID</th>
+            <th>사용자 이름</th>
+            <th>메일 주소</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in users %}
+        <tr>
+            <td>
+                <a href="{{ url_for('crud.edit_user', user_id=user.id) }}">{{ user.id }}</a>
+            </td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}
