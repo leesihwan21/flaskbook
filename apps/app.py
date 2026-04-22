@@ -3,8 +3,11 @@ from flask_login import LoginManager
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+from flask_socketio import SocketIO
 
 from apps.config import config
+
+socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
 
 db = SQLAlchemy()
 csrf = CSRFProtect()
@@ -24,7 +27,19 @@ login_manager.login_message = ""
 def create_app(config_key):
     # Flask 인스턴스 생성
     app = Flask(__name__)
+    socketio.init_app(app)
     app.config.from_object(config[config_key])
+
+    # 2. db.init_app(app) 등이 끝난 뒤, 실제 필요할 때 여기서 임포트합니다.
+    from apps.detector.service import AiStreamService
+
+    # 소켓 연결 시 AI 스트림 실행
+    @socketio.on('connect')
+    def handle_connect():
+        print("[DEBUG] 소켓 연결됨!")
+        RTSP_URL = "/dev/video1"
+        # 배경 작업으로 AI 로직 실행
+        socketio.start_background_task(AiStreamService.run_rtsp_stream, socketio, RTSP_URL)
 
     # SQLAlchemy와 앱을 연동
     db.init_app(app)
