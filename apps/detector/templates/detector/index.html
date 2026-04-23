@@ -53,7 +53,8 @@
     socket.on('ai_frame', function(data) {
         if (data.image) {
             const imgTag = document.getElementById("cameraView");
-            if(imgTag) imgTag.src = "data:image/jpeg;base64," + data.image;
+            // 수정 후 (이미 서버에서 헤더를 붙여서 보내므로 data.image만 넣습니다)
+            if(imgTag) imgTag.src = data.image;
         }
     });
 

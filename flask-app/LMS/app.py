@@ -1422,7 +1422,7 @@ def ai_stream():
 
 def run_ai_logic():
     # RTSP 주소 확인
-    RTSP_URL = "rtsp://admin:Mbc320!!@192.168.0.14:554/stream1"
+    RTSP_URL = "rtsp://admin:Mbc320!!@192.168.0.48:554/ch0_1.264"
     print(f"[SYSTEM] AI Background Task Start")
     AiStreamService.run_rtsp_stream(socketio, RTSP_URL)
 

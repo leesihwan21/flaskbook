@@ -5,6 +5,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 class User(db.Model, UserMixin):
     __tablename__ = "users"
+    # 중복 등록 방지를 위해 extend_existing을 사용합니다.
     __table_args__ = {'extend_existing': True} 
     
     id = db.Column(db.Integer, primary_key=True)
@@ -14,9 +15,9 @@ class User(db.Model, UserMixin):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
     
-    # [중요] 관계 설정은 딱 한 번만, 그리고 전체 경로로 지정합니다.
+    # 관계 설정: 문자열 클래스명을 사용하여 순환 참조 방지
     user_images = db.relationship(
-        "apps.crud.models.UserImage", 
+        "UserImage", 
         backref="user", 
         cascade="all, delete-orphan"
     )
@@ -32,8 +33,10 @@ class User(db.Model, UserMixin):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def is_duplicate_email(self):
-        return User.query.filter_by(email=self.email).first() is not None
+    @staticmethod
+    def is_duplicate_email(email):
+        """이메일 중복 여부를 확인합니다."""
+        return User.query.filter_by(email=email).first() is not None
 
 class UserImage(db.Model):
     __tablename__ = "user_images"
@@ -46,6 +49,18 @@ class UserImage(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
+class UserImageTag(db.Model):
+    __tablename__ = "user_image_tags"
+    __table_args__ = {'extend_existing': True}
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_image_id = db.Column(db.String, db.ForeignKey("user_images.id"))
+    tag_name = db.Column(db.String)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
+
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(user_id)
+    # SQLAlchemy 2.0 권장 방식으로 변경하여 경고 메시지 제거
+    return db.session.get(User, user_id)
+    

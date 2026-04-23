@@ -30,10 +30,9 @@ class AiStreamService:
     def run_rtsp_stream(cls, socketio, rtsp_url):
         # 1. H.265 대응 및 TCP 강제 설정
         cls._running = True
-        os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp|stimeout;5000000"
-        
-        cap = cv2.VideoCapture(1, cv2.CAP_V4L2) if rtsp_url == "/dev/video1" else cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
-        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1) 
+        os.environ["OPENCV_FFMPEG_CAPTURE_OPTIONS"] = "rtsp_transport;tcp"
+
+        cap = cv2.VideoCapture(rtsp_url, cv2.CAP_FFMPEG)
         
         if not cap.isOpened():
             print(f"[ERROR] RTSP 연결 실패: {rtsp_url}")
@@ -57,7 +56,7 @@ class AiStreamService:
                 continue
 
             # 2. GPU 기반 추론 (imgsz=640으로 성능 확보)
-            results = model.predict(frame, device=0, conf=0.7, verbose=False, imgsz=640) # conf=0.7 확율 70% 이상만 탐지
+            results = model.predict(frame, device='cpu', conf=0.7, verbose=False, imgsz=640) # conf=0.7 확율 70% 이상만 탐지
             boxes = results[0].boxes  # results 정의 후 할당해야 에러가 안 납니다.
             
 
@@ -68,9 +67,10 @@ class AiStreamService:
             _, buffer = cv2.imencode('.jpg', annotated_frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
             encoded_image = base64.b64encode(buffer).decode('utf-8')
 
-            # 5. 프레임 송출
+            # 5. 프레임 송출 (수정된 코드)
             socketio.emit('ai_frame', {
-                'image': encoded_image,
+                # 앞에 'data:image/jpeg;base64,' 를 추가합니다.
+                'image': f"data:image/jpeg;base64,{encoded_image}",
                 'count': frame_count
             })
 
@@ -85,8 +85,5 @@ class AiStreamService:
             
             # CPU/GPU 과열 방지
             socketio.sleep(0.01)
-            
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
 
         cap.release()

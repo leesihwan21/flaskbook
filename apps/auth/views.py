@@ -1,8 +1,10 @@
 from apps.app import db
 from apps.auth.forms import LoginForm, SignUpForm
+from apps.auth.forms import LoginForm, SignUpForm, FindIdForm, ResetPasswordRequestForm
 from apps.crud.models import User
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_user, logout_user
+
 
 # Blueprint를 사용하여 auth 생성
 auth = Blueprint("auth", __name__, template_folder="templates", static_folder="static")
@@ -27,7 +29,7 @@ def signup():
         )
 
         # 이메일 중복 체크
-        if user.is_duplicate_email():
+        if user.is_duplicate_email(form.email.data):
             flash("이미 등록된 메일 주소입니다.")
             return redirect(url_for("auth.signup"))
 
@@ -70,3 +72,27 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for("auth.login"))
+
+@auth.route("/find-id", methods=["GET", "POST"])
+def find_id():
+    form = FindIdForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user:
+            flash(f"회원님의 아이디는 {user.username}입니다.")
+            return redirect(url_for("auth.login"))
+        else:
+            flash("등록된 아이디가 없습니다.")
+    return render_template("auth/find_id.html", form=form)
+
+@auth.route("/reset-password-request", methods=["GET", "POST"])
+def reset_password_request():
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user:
+            # 실제로는 이메일로 비밀번호 재설정 링크를 보내야 합니다.
+            flash("비밀번호 재설정 링크가 이메일로 전송되었습니다.")
+        else:
+            flash("등록된 이메일 주소가 없습니다.")
+    return render_template("auth/reset_password_request.html", form=form)

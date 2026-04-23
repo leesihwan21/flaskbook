@@ -1,0 +1,2 @@
+### 모든 유저 조회 테스트
+GET http://localhost:5000/api/users

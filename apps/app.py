@@ -33,13 +33,28 @@ def create_app(config_key):
     # 2. db.init_app(app) 등이 끝난 뒤, 실제 필요할 때 여기서 임포트합니다.
     from apps.detector.service import AiStreamService
 
-    # 소켓 연결 시 AI 스트림 실행
+    # 스트림이 이미 실행 중인지 확인하기 위한 플래그
+    is_streaming = False
+
+    # apps/app.py
     @socketio.on('connect')
     def handle_connect():
         print("[DEBUG] 소켓 연결됨!")
-        RTSP_URL = "/dev/video1"
-        # 배경 작업으로 AI 로직 실행
+    
+        # 1. 아이디를 mbc320으로 변경 (VMS 설정과 동일하게)
+        # 2. 비밀번호 Mbc320!! 중 !!를 %21%21로 변경하여 전송
+        RTSP_URL = "rtsp://admin:Mbc320!!@192.168.0.48:554/ch0_1.264"
+    
         socketio.start_background_task(AiStreamService.run_rtsp_stream, socketio, RTSP_URL)
+
+
+    # apps/app.py 에 추가
+    @socketio.on('set_detection_target')
+    def handle_set_target(data):
+        target = data.get('target')
+        from apps.detector.service import AiStreamService
+        AiStreamService.set_target(target)
+        print(f"[DEBUG] 탐지 타겟 설정 완료: {target}")
 
     # SQLAlchemy와 앱을 연동
     db.init_app(app)
@@ -70,7 +85,7 @@ def create_app(config_key):
 
     # 커스텀 오류 화면 등록
     from apps.detector import views as error_views
-    app.register_error_handler(404, error_views.page_not_found)
-    app.register_error_handler(500, error_views.internal_server_error)
+    #app.register_error_handler(404, error_views.page_not_found)
+    #app.register_error_handler(500, error_views.internal_server_error)
 
     return app

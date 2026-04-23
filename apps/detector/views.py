@@ -5,11 +5,12 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torchvision
-from flask import Blueprint, abort, current_app, redirect, render_template, url_for, request, send_from_directory
+from flask import Blueprint, abort, current_app, redirect, render_template, url_for, request, send_from_directory, jsonify
 from flask_login import current_user, login_required
 from PIL import Image
 
 from apps.app import db
+from apps.app import csrf
 from apps.crud.models import User
 from apps.detector.forms import UploadImageForm, SearchForm
 from apps.detector.models import UserImage, UserImageTag
@@ -27,10 +28,11 @@ dt = Blueprint(
 def index():
     search_form = SearchForm()
 
-    # UserImage를 기준으로 모든 이미지를 가져옵니다.
-    # (작성자 정보는 모델의 relationship을 통해 템플릿에서 바로 쓸 수 있습니다.)
+    # 핵심: User와 UserImage를 조인하여 (User, UserImage) 튜플 리스트 형태로 반환합니다.
+    # 이렇게 해야 search 함수에서 사용하는 템플릿 로직과 호환됩니다.
     user_images = (
-        db.session.query(UserImage)
+        db.session.query(User, UserImage)
+        .join(UserImage, User.id == UserImage.user_id)
         .order_by(UserImage.created_at.desc())
         .all()
     )
@@ -187,6 +189,88 @@ def delete_image(image_id):
     db.session.commit()
     return redirect(url_for("detector.index"))
 
+
+@dt.route("/api/hello", methods=["GET"])
+def api_hello():
+    return jsonify({
+        "status": "success",
+        "message": "Hello, World!",
+        "version": "1.0.0"
+    })
+
+@dt.route("/api/users/<user_id>", methods=["GET"])
+def api_get_user(user_id):
+    user = db.session.query(User).filter(User.id == user_id).first()
+    if user is None:
+        return jsonify({
+            "status": "error",
+            "message": "User not found"
+        }), 404
+    
+    return jsonify({
+        "status": "success",
+        "data": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "created_at": user.created_at.isoformat(),
+            "updated_at": user.updated_at.isoformat()
+        }
+    })
+
+@dt.route("/api/users", methods=["GET"])
+def api_get_all_users():
+    users = db.session.query(User).all()
+    users_data = []
+    for user in users:
+        users_data.append({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "created_at": user.created_at.isoformat(),
+            "updated_at": user.updated_at.isoformat()
+        })
+    
+    return jsonify({
+        "status": "success",
+        "data": users_data,
+        "count": len(users_data),
+    })
+
+@dt.route("api/users", methods=["POST"])
+@csrf.exempt # -< 이 줄을 추가하면 CRSF 토큰 없이도 Postman 요청이 허용됨.
+def create_user_api():
+    data = request.get_json()
+    if not data or "username" not in data or "email" not in data or "password" not in data:
+        return jsonify({
+            "status": "error",
+            "message": "Missing required fields: username, email, password"
+        }), 400
+    
+    if User.is_duplicate_email(data["email"]):
+        return jsonify({
+            "status": "error",
+            "message": "Email already exists"
+        }), 400
+    
+    user = User(
+        username=data["username"],
+        email=data["email"],
+        password=data["password"]
+    )
+    db.session.add(user)
+    db.session.commit()
+    
+    return jsonify({
+        "status": "success",
+        "data": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "created_at": user.created_at.isoformat(),
+            "updated_at": user.updated_at.isoformat()
+        }
+    }), 201
 
 
 # 커스텀 오류 핸들러

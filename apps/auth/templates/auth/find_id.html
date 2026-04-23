@@ -1,0 +1,30 @@
+{% extends "detector/base.html" %}
+{% block title %}아이디 찾기{% endblock %}
+{% block content %}
+<div class="mx-auto dt-auth-main">
+  <div class="card dt-auth-card">
+    <div class="card-body">
+      <h3 class="card-title text-center">아이디 찾기</h3>
+      <form action="{{ url_for('auth.find_id') }}" method="POST" novalidate>
+        {{ form.csrf_token }}
+        
+        <div class="mb-3">
+            <label class="form-label">사용자명 (Username)</label>
+            {{ form.username(class="form-control", placeholder="가입 시 입력한 이름을 입력하세요") }}
+        </div>
+        
+        {% for error in form.username.errors %}
+        <span style="color: red;">{{ error }}</span>
+        {% endfor %}
+
+        <div class="d-grid gap-2">
+            {{ form.submit(class="btn btn-primary") }}
+        </div>
+      </form>
+      <div class="mt-3 text-center">
+        <a href="{{ url_for('auth.login') }}">로그인 화면으로 돌아가기</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

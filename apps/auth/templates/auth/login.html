@@ -17,6 +17,13 @@
           {{ form.password(class="form-control dt-auth-input", placeholder="비밀번호") }}
         </div>
         {{ form.submit(class="btn btn-md btn-primary btn-block dt-auth-btn w-100") }}
+        <div class="mt-3 text-center">
+            <small>
+                <a href="{{ url_for('auth.find_id') }}" class="text-decoration-none me-2">아이디 찾기</a>
+                <span class="text-muted">|</span>
+                <a href="{{ url_for('auth.reset_password_request') }}" class="text-decoration-none ms-2">비밀번호 찾기</a>
+            </small>
+        </div>
       </form>
     </section>
   </div>
