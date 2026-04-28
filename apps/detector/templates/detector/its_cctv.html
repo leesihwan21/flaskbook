@@ -1,12 +1,28 @@
 {% extends "detector/layout.html" %}
 {% block content %}
 <h2>ITS CCTV 목록</h2>
+
+<!-- HLS.js 라이브러리 추가 -->
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
 {% for cctv in cctvs %}
 <div>
     <h4>{{ cctv.cctvname }}</h4>
-    <video controls autoplay>
-        <source src="{{ cctv.cctvurl }}" type="application/x-mpegURL">
-    </video>
+    <video id="video_{{ loop.index }}" controls autoplay muted width="640" height="360"></video>
+    <script>
+        (function () {
+            var video = document.getElementById('video_{{ loop.index }}');
+            var url = "{{ cctv.cctvurl }}";
+            if (Hls.isSupported()) {
+                var hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+            } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+                video.play(); // -< 추가.
+            }
+        })();
+    </script>
 </div>
 {% endfor %}
 {% endblock %}

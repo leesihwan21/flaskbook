@@ -17,19 +17,19 @@ from flask import (
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_mail import Mail, Message
 
-# Flaskクラスをインスタンス化する
+# Flask 클래스를 인스턴스화한다
 app = Flask(__name__)
 
-# SECRET_KEYを追加する
+# SECRET_KEY를 추가한다
 app.config["SECRET_KEY"] = "2AZSMss3p5QPbcY2hBsJ"
 
-# ログレベルを設定する
+# 로그 레벨을 설정한다
 app.logger.setLevel(logging.DEBUG)
 
-# リダイレクトを中断しないようにする
+# 리다이렉트를 중단하지 않도록 설정한다
 app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = False
 
-# Mailクラスのコンフィグを追加する
+# Mail 클래스 설정을 추가한다
 app.config["MAIL_SERVER"] = os.environ.get("MAIL_SERVER")
 app.config["MAIL_PORT"] = os.environ.get("MAIL_PORT")
 app.config["MAIL_USE_TLS"] = os.environ.get("MAIL_USE_TLS")
@@ -37,14 +37,14 @@ app.config["MAIL_USERNAME"] = os.environ.get("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.environ.get("MAIL_PASSWORD")
 app.config["MAIL_DEFAULT_SENDER"] = os.environ.get("MAIL_DEFAULT_SENDER")
 
-# DebugToolbarExtensionにアプリケーションをセットする
+# DebugToolbarExtension에 애플리케이션을 세팅한다
 toolbar = DebugToolbarExtension(app)
 
-# flask-mail拡張を登録する
+# flask-mail 확장을 등록한다
 mail = Mail(app)
 
 
-# URLと実行する関数をマッピングする
+# URL과 실행할 함수를 매핑한다
 @app.route("/")
 def index():
     return "Hello, Flaskbook!"
@@ -55,14 +55,14 @@ def hello(name):
     return f"Hello, {name}"
 
 
-# show_nameエンドポイントを作成する
+# show_name 엔드포인트를 작성한다
 @app.route("/name/<name>")
 def show_name(name):
-    # 変数をテンプレートエンジンに渡す
+    # 변수를 템플릿 엔진에 전달한다
     return render_template("index.html", name=name)
 
 
-# Flask2からは@app.get("/hello")、@app.post("/hello")と記述することが可能
+# Flask2부터는 @app.get("/hello"), @app.post("/hello")로 기술하는 것이 가능
 # @app.get("/hello")
 # @app.post("/hello")
 # def hello():
@@ -78,86 +78,86 @@ with app.test_request_context():
     print(url_for("show_name", name="ichiro", page="1"))
 
 
-# ここで呼び出すとエラーとなる
+# 여기서 호출하면 에러가 발생함
 # print(current_app)
 
-# アプリケーションコンテキストを取得してスタックへpushする
+# 애플리케이션 컨텍스트를 취득하여 스택에 push한다
 ctx = app.app_context()
 ctx.push()
 
-# current_appにアクセスが可能になる
+# current_app에 접근이 가능해진다
 print(current_app.name)
 # >> apps.minimalapp.app
 
-# グローバルなテンポラリ領域に値を設定する
+# 글로벌 템퍼러리 영역에 값을 설정한다
 g.connection = "connection"
 print(g.connection)
 # >> connection
 
 with app.test_request_context("/users?updated=true"):
-    # trueが出力される
+    # true가 출력된다
     print(request.args.get("updated"))
 
 
 @app.route("/contact")
 def contact():
-    # レスポンスオブジェクトを取得する
+    # 응답 객체를 취득한다
     response = make_response(render_template("contact.html"))
 
-    # クッキーを設定する
+    # 쿠키를 설정한다
     response.set_cookie("flaskbook key", "flaskbook value")
 
-    # セッションを設定する
+    # 세션을 설정한다
     session["username"] = "ichiro"
 
-    # レスポンスオブジェクトを返す
+    # 응답 객체를 반환한다
     return response
 
 
 @app.route("/contact/complete", methods=["GET", "POST"])
 def contact_complete():
     if request.method == "POST":
-        # form属性を使ってフォームの値を取得する
+        # form 속성을 사용하여 폼 값을 취득한다
         username = request.form["username"]
         email = request.form["email"]
         description = request.form["description"]
 
-        # 入力チェック
+        # 입력 체크
         is_valid = True
         if not username:
-            flash("ユーザ名は必須です")
+            flash("사용자명은 필수입니다")
             is_valid = False
 
         if not email:
-            flash("メールアドレスは必須です")
-        is_valid = False
+            flash("메일 주소는 필수입니다")
+            is_valid = False
 
         try:
             validate_email(email)
         except EmailNotValidError:
-            flash("メールアドレスの形式で入力してください")
+            flash("메일 주소 형식으로 입력해 주세요")
             is_valid = False
 
         if not description:
-            flash("問い合わせ内容は必須です")
+            flash("문의 내용은 필수입니다")
             is_valid = False
 
         if not is_valid:
             return redirect(url_for("contact"))
 
-        # メールを送る
+        # 메일을 보낸다
         send_email(
             email,
-            "問い合わせありがとうございました。",
+            "문의해 주셔서 감사합니다.",
             "contact_mail",
             username=username,
             description=description,
         )
 
-        # 問い合わせ完了エンドポイントへリダイレクトする
-        flash("問い合わせありがとうございました。")
+        # 문의 완료 엔드포인트로 리다이렉트한다
+        flash("문의해 주셔서 감사합니다.")
 
-        # contactエンドポイントへリダイレクトする
+        # contact_complete 엔드포인트로 리다이렉트한다
         return redirect(url_for("contact_complete"))
     return render_template("contact_complete.html")
 
@@ -170,7 +170,7 @@ app.logger.debug("debug")
 
 
 def send_email(to, subject, template, **kwargs):
-    """メールを送信する関数"""
+    """메일을 전송하는 함수"""
     msg = Message(subject, recipients=[to])
     msg.body = render_template(template + ".txt", **kwargs)
     msg.html = render_template(template + ".html", **kwargs)

@@ -26,7 +26,7 @@ class BaseConfig:
 
 
 class LocalConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://flask:PythonDB@localhost:3306/flaskDB"
+    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://flask:PythonDB@127.0.0.1:3306/flaskDB"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = True
     UPLOAD_FOLDER = str(Path(basedir, "apps", "detector", "storage"))

@@ -47,6 +47,10 @@ def create_app(config_key):
     
         socketio.start_background_task(AiStreamService.run_rtsp_stream, socketio, RTSP_URL)
 
+        # USB CAM (추가)
+        USB_CAM = 0  # /dev/video0
+        socketio.start_background_task(AiStreamService.run_rtsp_stream, socketio, USB_CAM)
+
 
     # apps/app.py 에 추가
     @socketio.on('set_detection_target')

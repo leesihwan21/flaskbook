@@ -6,10 +6,10 @@ import cv2
 import numpy as np
 import torchvision
 import requests
+
 from flask import Blueprint, abort, current_app, redirect, render_template, url_for, request, send_from_directory, jsonify
 from flask_login import current_user, login_required
 from PIL import Image
-
 from apps.app import db
 from apps.app import csrf
 from apps.crud.models import User
