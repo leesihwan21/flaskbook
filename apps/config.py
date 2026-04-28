@@ -26,11 +26,10 @@ class BaseConfig:
 
 
 class LocalConfig(BaseConfig):
-    SQLALCHEMY_DATABASE_URI = f"sqlite:///{basedir / 'local.sqlite'}"
+    SQLALCHEMY_DATABASE_URI = "mysql+pymysql://flask:PythonDB@localhost:3306/flaskDB"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = True
     UPLOAD_FOLDER = str(Path(basedir, "apps", "detector", "storage"))
-    #UPLOAD_FOLDER = str(Path(basedir, "apps", "detector", "static", "images"))
 
 
 class TestingConfig(BaseConfig):

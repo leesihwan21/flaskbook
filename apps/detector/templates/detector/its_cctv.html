@@ -1,0 +1,12 @@
+{% extends "detector/layout.html" %}
+{% block content %}
+<h2>ITS CCTV 목록</h2>
+{% for cctv in cctvs %}
+<div>
+    <h4>{{ cctv.cctvname }}</h4>
+    <video controls autoplay>
+        <source src="{{ cctv.cctvurl }}" type="application/x-mpegURL">
+    </video>
+</div>
+{% endfor %}
+{% endblock %}

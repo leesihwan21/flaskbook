@@ -5,6 +5,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torchvision
+import requests
 from flask import Blueprint, abort, current_app, redirect, render_template, url_for, request, send_from_directory, jsonify
 from flask_login import current_user, login_required
 from PIL import Image
@@ -271,6 +272,32 @@ def create_user_api():
             "updated_at": user.updated_at.isoformat()
         }
     }), 201
+
+@dt.route("/its-cctv")
+def its_cctv():
+    url = "https://openapi.its.go.kr:9443/cctvInfo"
+    params = {
+        "apiKey": "0f7dc12f98ce43d580245550cf068ff1",
+        "type": "ex",
+        "cctvType": 1,
+        "minX": 126.0,
+        "maxX": 128.0,
+        "minY": 34.0,
+        "maxY": 38.0,
+        "getType": "json"
+    }
+    try:
+        # verify=False는 SSL 인증서 검증을 건너뜁니다 (개발 단계에서 사용)
+        response = requests.get(url, params=params, verify=False)
+        response.raise_for_status() # 200 OK가 아니면 에러 발생
+        data = response.json()
+        cctvs = data.get("response", {}).get("data", [])
+    except Exception as e:
+        # API 호출 실패 시 빈 리스트를 전달하여 화면이 터지지 않게 보호
+        print(f"[ERROR] API 호출 실패: {e}")
+        cctvs = []
+        
+    return render_template("detector/its_cctv.html", cctvs=cctvs)
 
 
 # 커스텀 오류 핸들러
